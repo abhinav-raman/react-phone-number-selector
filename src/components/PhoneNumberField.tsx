@@ -1,20 +1,8 @@
 import { Check, ChevronDown } from "lucide-react";
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-  PopoverTrigger,
-} from "./ui/popover";
+import * as Popover from "./ui/popover";
 import { Separator } from "./ui/separator";
 import { ComponentProps, useMemo, useState } from "react";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "./ui/command";
+import * as Command from "./ui/command";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/react/dist/iconify.js";
@@ -43,6 +31,7 @@ const PhoneNumberField = (props: Props) => {
   const countryValues = useMemo(
     () =>
       getCountries().map((c) => ({
+        code: c,
         startIcon: <Icon icon={`circle-flags:${c.toLowerCase()}`} width={24} />,
         label: `${COUNTRY_LABELS[c]} (+${getCountryCallingCode(c)})`,
         onClick: () =>
@@ -55,15 +44,15 @@ const PhoneNumberField = (props: Props) => {
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverAnchor>
+    <Popover.Popover open={open} onOpenChange={setOpen}>
+      <Popover.PopoverAnchor>
         <div
           className={cn(
             className,
             "relative flex items-center justify-center rounded border border-zinc-200 ring-zinc-400",
           )}
         >
-          <PopoverTrigger
+          <Popover.PopoverTrigger
             asChild
             className="inline-flex h-full items-center justify-start overflow-hidden border-none px-3 py-2"
           >
@@ -79,55 +68,7 @@ const PhoneNumberField = (props: Props) => {
               <p className="text-sm">{"+" + selectedCountry.phoneCode}</p>
               <ChevronDown className={cn(open ? "rotate-180" : "")} />
             </Button>
-          </PopoverTrigger>
-          <PopoverContent className={cn(ddnClassName, "w-full p-0")}>
-            <Command shouldFilter={false}>
-              <CommandInput
-                value={searchedValue}
-                onChangeCapture={({ currentTarget }) =>
-                  setSearchedValue(currentTarget.value)
-                }
-                placeholder="Search countries..."
-                className="h-9"
-              />
-              <CommandList>
-                <CommandEmpty>No country found.</CommandEmpty>
-                <CommandGroup>
-                  {countryValues
-                    .filter((c) =>
-                      c.label
-                        .toLowerCase()
-                        .includes(searchedValue.trim().toLowerCase()),
-                    )
-                    .map((country) => {
-                      const { label, onClick, startIcon } = country;
-                      return (
-                        <CommandItem
-                          key={label}
-                          value={label}
-                          onSelect={() => {
-                            onClick();
-                            setOpen(false);
-                            setSearchedValue("");
-                          }}
-                        >
-                          {startIcon}
-                          <p className="w-full text-nowrap">{label}</p>
-                          <Check
-                            className={cn(
-                              "ml-auto",
-                              selectedCountry.country === country
-                                ? "opacity-100"
-                                : "opacity-0",
-                            )}
-                          />
-                        </CommandItem>
-                      );
-                    })}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
+          </Popover.PopoverTrigger>
           <Separator
             orientation="vertical"
             className="-z-10 mx-1 h-6 bg-zinc-200"
@@ -144,8 +85,59 @@ const PhoneNumberField = (props: Props) => {
             placeholder="Enter Phone Number..."
           />
         </div>
-      </PopoverAnchor>
-    </Popover>
+      </Popover.PopoverAnchor>
+      <Popover.PopoverContent className={cn(ddnClassName, "w-full p-0")}>
+        <Command.Command shouldFilter={false}>
+          <Command.CommandInput
+            value={searchedValue}
+            onChangeCapture={({ currentTarget }) =>
+              setSearchedValue(currentTarget.value)
+            }
+            placeholder="Search countries..."
+            className="h-9"
+          />
+          <Command.CommandList>
+            <Command.CommandEmpty>No country found.</Command.CommandEmpty>
+            <Command.CommandGroup>
+              {countryValues
+                .filter((c) =>
+                  c.label
+                    .toLowerCase()
+                    .includes(searchedValue.trim().toLowerCase()),
+                )
+                .map((country) => {
+                  const { label, onClick, startIcon, code } = country;
+                  return (
+                    <Command.CommandItem
+                      className={cn(
+                        code === selectedCountry.country ? "bg-accent" : "",
+                      )}
+                      key={label}
+                      value={label}
+                      onSelect={() => {
+                        onClick();
+                        setOpen(false);
+                        setSearchedValue("");
+                      }}
+                    >
+                      {startIcon}
+                      <p className="w-full text-nowrap">{label}</p>
+                      <Check
+                        className={cn(
+                          "ml-auto",
+                          selectedCountry.country === code
+                            ? "opacity-100"
+                            : "opacity-0",
+                        )}
+                      />
+                    </Command.CommandItem>
+                  );
+                })}
+            </Command.CommandGroup>
+          </Command.CommandList>
+        </Command.Command>
+      </Popover.PopoverContent>
+    </Popover.Popover>
   );
 };
 
